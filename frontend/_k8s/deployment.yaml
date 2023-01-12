@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-app-frontend
+  template:
+    metadata:
+      labels:
+        app: todo-app-frontend
+    spec:
+      containers:
+      - name: todo-app-frontend
+        image: fsteccanella/todo-app-frontend
+        imagePullPolicy: Always
+        env:
+          - name: TODO_API_BASE_URL
+            value: http://todo-app-backend:3000
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80

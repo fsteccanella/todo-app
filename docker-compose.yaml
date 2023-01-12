@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  frontend:
+    build: ./frontend
+    image: fsteccanella/todo-app-frontend
+    environment:
+      - TODO_API_BASE_URL=http://backend:3000
+    ports:
+      - "8080:80"
+  backend:
+    build: ./backend
+    image: fsteccanella/todo-app-backend
+    depends_on:
+      - db
+#    volumes:
+#      - mongodata:/data/db
+    environment:
+      - API_PORT=3000
+      - MONGO_URL=db
+  db:
+    image: mongo:4.2
+
+volumes:
+  mongodata:
