@@ -23,3 +23,13 @@ todoService.register(router, '/todos');
 server.listen(port, () => {
   console.log(`BACKEND is running on port ${port}`);
 });
+
+async function closeGracefully(signal) {
+  console.log(`*^!@4=> Received signal to terminate: ${signal}`)
+
+  await mongoose.disconnect()
+
+  process.exit(0)
+}
+process.once('SIGINT', closeGracefully)
+process.once('SIGTERM', closeGracefully)
