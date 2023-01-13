@@ -17,8 +17,8 @@ spec:
         image: fsteccanella/todo-app-frontend
         imagePullPolicy: Always
         env:
-          - name: TODO_API_BASE_URL
-            value: http://todo-app-backend:3000
+          - name: TODO_API_SERVER
+            value: todo-app-backend:3000
         resources:
           limits:
             memory: "128Mi"

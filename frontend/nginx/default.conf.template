@@ -1,3 +1,7 @@
+upstream todo-api-server {
+  server ${TODO_API_SERVER};
+}
+
 server {
     listen       80;
     listen  [::]:80;
@@ -9,8 +13,10 @@ server {
     }
 
     location /api/todos {
-        set $target "${TODO_API_BASE_URL}";  # Using internal variable to allow non existing upstream
-        proxy_pass $target/api/todos;
+        set $target "${TODO_API_SERVER}";
+        proxy_pass http://todo-api-server/api/todos;
+        
+        proxy_connect_timeout 1s;
     }
 
     error_page   500 502 503 504  /50x.html;

@@ -5,7 +5,7 @@ services:
     build: ./frontend
     image: fsteccanella/todo-app-frontend
     environment:
-      - TODO_API_BASE_URL=http://backend:3000
+      - TODO_API_SERVER=backend:3000
     ports:
       - "8080:80"
   backend:
