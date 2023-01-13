@@ -4,6 +4,8 @@ services:
   frontend:
     build: ./frontend
     image: fsteccanella/todo-app-frontend
+    depends_on:
+      - backend
     environment:
       - TODO_API_SERVER=backend:3000
     ports:
