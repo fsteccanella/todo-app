@@ -1,6 +1,6 @@
 FROM node:18-alpine
 ENV NODE_ENV=production
-ENV MONGO_URL=
+ENV MONGO_SERVER=
 
 WORKDIR /app
 

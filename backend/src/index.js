@@ -14,7 +14,7 @@ server.use('/api', router);
 
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-const connectionString = `mongodb://${process.env.MONGO_URL || 'localhost'}/todo`;
+const connectionString = `mongodb://${process.env.MONGO_SERVER || 'localhost'}/todo`;
 mongoose.connect(connectionString);
 
 const todoService = require('./service/todo.js');
