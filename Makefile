@@ -52,8 +52,9 @@ docker-compose-start: ## Start the docker compose stack
 k8s-minikube-start: ## Start minikiube cluster
 	@minikube start
 
-k8s-minikube-enable-ingress: k8s-minikube-start ## Enable ingress on minkube
+k8s-minikube-addons: k8s-minikube-start ## Enable ingress and metrics on minkube
 	@minikube addons enable ingress
+	@minikube addons enable metrics-server
 
 k8s-deploy-mongo: ## Deploy MongoDB manually
 	@kubectl apply -f ./_db/_k8s/statefulset.yaml -f ./_db/_k8s/service.yaml 
@@ -74,7 +75,10 @@ k8s-deploy-backend-ingress: ## Deploy dedicated backend ingress
 	@kubectl apply -f ./backend/_k8s/ingress.yaml 
 
 
-	
+####################
+
+load-test:
+	@ab -n 1000000  "http://todo-app.example.local/api/todos"	
 
 ####################
 
