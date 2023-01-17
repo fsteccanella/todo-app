@@ -57,9 +57,12 @@ k8s-minikube-addons: k8s-minikube-start ## Enable ingress and metrics on minkube
 	@minikube addons enable metrics-server
 
 k8s-deploy-mongo: ## Deploy MongoDB manually
-	@kubectl apply -f ./_db/_k8s/statefulset.yaml -f ./_db/_k8s/service.yaml 
+	@kubectl apply -f ./_db/_k8s
 
-k8s-deploy-mongo-helm: ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
+k8s-delete-mongo: ## Delete manually deployed MongoDB
+	@kubectl delete --ignore-not-found=true -f ./_db/_k8s
+
+k8s-deploy-mongo-helm: k8s-delete-mongo ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
 	@helm repo add bitnami https://charts.bitnami.com/bitnami
 	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset --set service.nameOverride=mongodb
 
@@ -76,11 +79,9 @@ k8s-deploy-backend-ingress: ## Deploy dedicated backend ingress
 	@kubectl apply -f ./backend/_k8s/ingress.yaml 
 
 k8s-deploy-all: ## Deploy todo app
-	@$(MAKE) k8s-deploy-mongo
 	@$(MAKE) k8s-deploy-backend
-	@$(MAKE) k8s-deploy-frontend
 	@$(MAKE) k8s-deploy-backend-ingress
-	@$(MAKE) k8s-deploy-frontend-ingress
+	@$(MAKE) k8s-deploy-frontend
 
 ####################
 
