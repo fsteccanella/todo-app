@@ -67,20 +67,13 @@ k8s-deploy-mongo-helm: k8s-delete-mongo ## Deploy MongoDB with Helm (https://git
 	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset --set service.nameOverride=mongodb
 
 k8s-deploy-backend: ## Deploy backend app
-	@kubectl apply -f ./backend/_k8s/deployment.yaml -f ./backend/_k8s/service.yaml -f ./backend/_k8s/hpa.yaml
+	@kubectl apply -f ./backend/_k8s
 
 k8s-deploy-frontend: ## Deploy frontend app
-	@kubectl apply -f ./frontend/_k8s/deployment.yaml -f ./frontend/_k8s/service.yaml -f ./frontend/_k8s/ingress.yaml
-
-k8s-break-frontend-proxy: ## Break frontend proxy (Demo)
-	@kubectl patch deployment todo-app-frontend --patch-file ./frontend/_k8s/patches/break-proxy.yaml
-
-k8s-deploy-backend-ingress: ## Deploy dedicated backend ingress
-	@kubectl apply -f ./backend/_k8s/ingress.yaml 
+	@kubectl apply -f ./frontend/_k8s
 
 k8s-deploy-all: ## Deploy todo app
 	@$(MAKE) k8s-deploy-backend
-	@$(MAKE) k8s-deploy-backend-ingress
 	@$(MAKE) k8s-deploy-frontend
 
 ####################

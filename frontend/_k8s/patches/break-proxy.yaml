@@ -1,8 +1,0 @@
-spec:
-  template:
-    spec:
-      containers:
-      - name: todo-app-frontend
-        env:
-          - name: TODO_API_SERVER
-            value: todo-app-backend:9999
