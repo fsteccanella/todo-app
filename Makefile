@@ -75,6 +75,12 @@ k8s-break-frontend-proxy: ## Break frontend proxy (Demo)
 k8s-deploy-backend-ingress: ## Deploy dedicated backend ingress
 	@kubectl apply -f ./backend/_k8s/ingress.yaml 
 
+k8s-deploy-all: ## Deploy todo app
+	@$(MAKE) k8s-deploy-mongo
+	@$(MAKE) k8s-deploy-backend
+	@$(MAKE) k8s-deploy-frontend
+	@$(MAKE) k8s-deploy-backend-ingress
+	@$(MAKE) k8s-deploy-frontend-ingress
 
 ####################
 
