@@ -59,8 +59,9 @@ k8s-minikube-addons: k8s-minikube-start ## Enable ingress and metrics on minkube
 k8s-deploy-mongo: ## Deploy MongoDB manually
 	@kubectl apply -f ./_db/_k8s/statefulset.yaml -f ./_db/_k8s/service.yaml 
 
-k8s-deploy-backend:
-	@kubectl apply -f ./backend/_k8s/deployment.yaml -f ./backend/_k8s/service.yaml 
+k8s-deploy-mongo-helm: ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
+	@helm repo add bitnami https://charts.bitnami.com/bitnami
+	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset --set service.nameOverride=mongodb
 
 k8s-deploy-backend: ## Deploy backend app
 	@kubectl apply -f ./backend/_k8s/deployment.yaml -f ./backend/_k8s/service.yaml -f ./backend/_k8s/hpa.yaml
