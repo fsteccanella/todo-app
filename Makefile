@@ -62,10 +62,6 @@ k8s-deploy-mongo: ## Deploy MongoDB manually
 k8s-delete-mongo: ## Delete manually deployed MongoDB
 	@kubectl delete --ignore-not-found=true -f ./_db/_k8s
 
-k8s-deploy-mongo-helm: k8s-delete-mongo ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
-	@helm repo add bitnami https://charts.bitnami.com/bitnami
-	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset --set service.nameOverride=mongodb
-
 k8s-deploy-backend: ## Deploy backend app
 	@kubectl apply -f ./backend/_k8s
 
@@ -73,8 +69,15 @@ k8s-deploy-frontend: ## Deploy frontend app
 	@kubectl apply -f ./frontend/_k8s
 
 k8s-deploy-all: ## Deploy todo app
+	@$(MAKE) k8s-deploy-mongo
 	@$(MAKE) k8s-deploy-backend
 	@$(MAKE) k8s-deploy-frontend
+
+####################
+
+helm-deploy-mongo: k8s-delete-mongo ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
+	@helm repo add bitnami https://charts.bitnami.com/bitnami
+	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset
 
 ####################
 
