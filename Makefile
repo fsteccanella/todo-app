@@ -7,25 +7,25 @@ guard-%:
 		exit 1; \
 	fi
 
-docker-build-backend: ## Build the backend app
+_docker-build-backend: ## Build the backend app
 	@docker build -t fsteccanella/todo-app-backend ./backend
 
-docker-build-frontend: ## Build the frontend app
+_docker-build-frontend: ## Build the frontend app
 	@docker build -t fsteccanella/todo-app-frontend ./frontend
 
 docker-build: ## Build all the apps
-	@$(MAKE) docker-build-backend
-	@$(MAKE) docker-build-frontend
+	@$(MAKE) _docker-build-backend
+	@$(MAKE) _docker-build-frontend
 
-docker-push-backend: ## Push the backend app
+_docker-push-backend: ## Push the backend app
 	@docker push fsteccanella/todo-app-backend
 
-docker-push-frontend: ## Push the frontend app
+_docker-push-frontend: ## Push the frontend app
 	@docker push fsteccanella/todo-app-frontend
 
 docker-push: ## Push all the apps
-	@$(MAKE) docker-push-backend
-	@$(MAKE) docker-push-frontend
+	@$(MAKE) _docker-push-backend
+	@$(MAKE) _docker-push-frontend
 
 docker-run-mongo: ## Start MongoDB
 	@docker run -it --rm -p 27017:27017 mongo:4.2
@@ -38,10 +38,10 @@ docker-run-frontend: guard-TODO_API_SERVER ## Start frontend app
 
 ####################
 
-docker-compose-build: ## Build all the apps with docker compose
+_docker-compose-build: ## Build all the apps with docker compose
 	@docker compose build
 
-docker-compose-push: ## Push all the apps with docker compose
+_docker-compose-push: ## Push all the apps with docker compose
 	@docker compose push
 
 docker-compose-start: ## Start the docker compose stack
@@ -51,50 +51,48 @@ docker-compose-start: ## Start the docker compose stack
 
 k8s-minikube-start: ## Start minikiube cluster (use --driver=hyperv on win)	
 	@minikube start
-
-k8s-minikube-addons: k8s-minikube-start ## Enable ingress and metrics on minkube
 	@minikube addons enable ingress
 	@minikube addons enable metrics-server
 
-k8s-deploy-ns:
+_k8s-deploy-ns: ## Deploy todo namespace
 	@kubectl create ns todo --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl config set-context --current --namespace=todo
 
-k8s-deploy-mongo: ## Deploy MongoDB manually
+_k8s-deploy-mongo: ## Deploy MongoDB manually
 	@kubectl apply -f ./_db/_k8s
 
-k8s-deploy-backend: ## Deploy backend app
+_k8s-deploy-backend: ## Deploy backend app
 	@kubectl apply -f ./backend/_k8s
 
-k8s-deploy-frontend: ## Deploy frontend app
+_k8s-deploy-frontend: ## Deploy frontend app
 	@kubectl apply -f ./frontend/_k8s
 
-k8s-deploy-todo: k8s-deploy-ns## Deploy todo app
+k8s-deploy-todo: _k8s-deploy-ns## Deploy todo app
 	@kubectl config set-context --current --namespace=todo
-	@$(MAKE) k8s-deploy-mongo
-	@$(MAKE) k8s-deploy-backend
-	@$(MAKE) k8s-deploy-frontend
+	@$(MAKE) _k8s-deploy-mongo
+	@$(MAKE) _k8s-deploy-backend
+	@$(MAKE) _k8s-deploy-frontend
 	@kubectl create ingress todo-app-backend --rule=todo-app.example.local/api/todos*=todo-app-backend:3000 --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl create ingress todo-app-frontend --rule=todo-app.example.local/*=todo-app-frontend:80 --dry-run=client -o yaml | kubectl apply -f -
 
 ####################
 
-helm-deploy-ns:
+_helm-deploy-ns: ## Deploy todo-helm namespace
 	@kubectl create ns todo-helm --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl config set-context --current --namespace=todo-helm
 
-helm-deploy-mongo: helm-deploy-ns ## Deploy MongoDB with Helm
+helm-deploy-mongo: _helm-deploy-ns ## Deploy MongoDB with Helm
 	@helm repo add bitnami https://charts.bitnami.com/bitnami
 	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset
 
 ####################
 
-istio-build-frontend-red: ## Build the red frontend app
-	@echo "body { background: red; }" > ./frontend/public/theme.css
+_istio-build-frontend-red: ## Build the red frontend app
+	@sed -i "s/theme\.css/theme-red\.css/g" ./frontend/public/index.html
 	@docker build -t fsteccanella/todo-app-frontend:red ./frontend
-	@echo "" > ./frontend/public/theme.css
+	@sed -i "s/theme\-red.css/theme\.css/g" ./frontend/public/index.html
 
-istio-push-frontend-red: ## Push the frontend app
+_istio-push-frontend-red: ## Push the frontend app
 	@docker push fsteccanella/todo-app-frontend:red
 
 istio-setup: ## Install Istio with istioctl
@@ -102,42 +100,43 @@ istio-setup: ## Install Istio with istioctl
 	@./istio-1.16.1/bin/istioctl install -y
 	@kubectl apply -f ./istio-1.16.1/samples/addons/prometheus.yaml
 	@kubectl apply -f ./istio-1.16.1/samples/addons/kiali.yaml
+	@kubectl apply -f ./istio-1.16.1/samples/addons/jaeger.yaml
+	@kubectl apply -f ./istio-1.16.1/samples/addons/grafana.yaml
 	@rm -rf ./istio-1.16.1
 
-istio-deploy-ns:
+_istio-deploy-ns: ## Deploy todo-istio namespace
 	@kubectl create ns todo-istio --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl config set-context --current --namespace=todo-istio
-	@$(MAKE) istio-label-ns
+	@$(MAKE) _istio-label-ns
 
-istio-label-ns: ## Label todo namespace for istio sidecar injection
+_istio-label-ns: ## Label todo namespace for istio sidecar injection
 	@kubectl label namespace todo-istio istio-injection=enabled
 
-istio-deploy-mongo: ## Deploy MongoDB manually
+_istio-deploy-mongo: ## Deploy MongoDB manually
 	@kubectl apply -f ./_db/_k8s
 
-istio-deploy-backend: ## Deploy backend app
+_istio-deploy-backend: ## Deploy backend app
 	@kubectl apply -f ./backend/_k8s
 
-istio-deploy-frontend: ## Deploy frontend app
+_istio-deploy-frontend: ## Deploy frontend app
 	@kubectl apply -f ./frontend/_k8s
 
-istio-deploy-frontend-red: ## Deploy the frontend app
+_istio-deploy-frontend-red: ## Deploy the frontend app
 	@kubectl apply -f ./frontend/_k8s/red
 
-istio-deploy-todo: ## Deploy istio components to show canary deploy	
-	@kubectl config set-context --current --namespace=todo-istio
-	@$(MAKE) istio-deploy-mongo
-	@$(MAKE) istio-deploy-backend
-	@$(MAKE) istio-deploy-frontend
-	@$(MAKE) istio-deploy-frontend-red
+istio-deploy-todo: _istio-deploy-ns ## Deploy istio components to show canary deploy	
+	@$(MAKE) _istio-deploy-mongo
+	@$(MAKE) _istio-deploy-backend
+	@$(MAKE) _istio-deploy-frontend
+	@$(MAKE) _istio-deploy-frontend-red
 	@kubectl apply -f ./_istio
 
 ####################
 
 load-test: ## Perform load test
-	@ab -n 1000000  "http://todo-app.example.local/api/todos"	
+	@ab -n 1000000  "http://todo-app-istio.example.local/"	
 
 ####################
 
 help: ## Show this help
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[0-9a-zA-Z-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

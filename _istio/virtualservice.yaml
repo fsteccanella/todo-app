@@ -23,10 +23,10 @@ spec:
         prefix: "/"    
     route:
     - destination:
-        host: todo-app-frontend-all
+        host: todo-app-frontend
         subset: base
       weight: 50
     - destination:
-        host: todo-app-frontend-all
+        host: todo-app-frontend
         subset: red
       weight: 50

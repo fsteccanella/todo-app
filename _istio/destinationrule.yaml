@@ -2,9 +2,9 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-    name: todo-app-frontend-sticky
+    name: todo-app-frontend
 spec:
-    host: todo-app-frontend-all
+    host: todo-app-frontend
     subsets:
     - name: base
       labels:
