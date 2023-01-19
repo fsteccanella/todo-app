@@ -1,0 +1,14 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+    name: todo-app-frontend-sticky
+spec:
+    host: todo-app-frontend-all
+    subsets:
+    - name: base
+      labels:
+        version: base
+    - name: red
+      labels:
+        version: red

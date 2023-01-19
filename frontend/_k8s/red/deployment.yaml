@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todo-app-frontend
+  name: todo-app-frontend-red
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: todo-app-frontend
-      version: base
+      version: red
   template:
     metadata:
       labels:
         app: todo-app-frontend
-        version: base
+        version: red
     spec:
       containers:
       - name: todo-app-frontend
-        image: fsteccanella/todo-app-frontend
+        image: fsteccanella/todo-app-frontend:red
         imagePullPolicy: Always
         env:
           - name: TODO_API_SERVER

@@ -49,7 +49,7 @@ docker-compose-start: ## Start the docker compose stack
 
 ####################
 
-k8s-minikube-start: ## Start minikiube cluster
+k8s-minikube-start: ## Start minikiube cluster (use --driver=hyperv on win)	
 	@minikube start
 
 k8s-minikube-addons: k8s-minikube-start ## Enable ingress and metrics on minkube
@@ -78,6 +78,16 @@ k8s-deploy-all: ## Deploy todo app
 helm-deploy-mongo: k8s-delete-mongo ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
 	@helm repo add bitnami https://charts.bitnami.com/bitnami
 	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset
+
+####################
+
+istio-build-frontend-red: ## Build the red frontend app
+	@echo "body { background: red; }" > ./frontend/public/theme.css
+	@docker build -t fsteccanella/todo-app-frontend:red ./frontend
+	@echo "" > ./frontend/public/theme.css
+
+istio-push-frontend-red: ## Push the frontend app
+	@docker push fsteccanella/todo-app-frontend:red
 
 ####################
 
