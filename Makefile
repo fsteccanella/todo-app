@@ -56,11 +56,12 @@ k8s-minikube-addons: k8s-minikube-start ## Enable ingress and metrics on minkube
 	@minikube addons enable ingress
 	@minikube addons enable metrics-server
 
+k8s-deploy-ns:
+	@kubectl create ns todo --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl config set-context --current --namespace=todo
+
 k8s-deploy-mongo: ## Deploy MongoDB manually
 	@kubectl apply -f ./_db/_k8s
-
-k8s-delete-mongo: ## Delete manually deployed MongoDB
-	@kubectl delete --ignore-not-found=true -f ./_db/_k8s
 
 k8s-deploy-backend: ## Deploy backend app
 	@kubectl apply -f ./backend/_k8s
@@ -68,14 +69,21 @@ k8s-deploy-backend: ## Deploy backend app
 k8s-deploy-frontend: ## Deploy frontend app
 	@kubectl apply -f ./frontend/_k8s
 
-k8s-deploy-all: ## Deploy todo app
+k8s-deploy-todo: k8s-deploy-ns## Deploy todo app
+	@kubectl config set-context --current --namespace=todo
 	@$(MAKE) k8s-deploy-mongo
 	@$(MAKE) k8s-deploy-backend
 	@$(MAKE) k8s-deploy-frontend
+	@kubectl create ingress todo-app-backend --rule=todo-app.example.local/api/todos*=todo-app-backend:3000 --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl create ingress todo-app-frontend --rule=todo-app.example.local/*=todo-app-frontend:80 --dry-run=client -o yaml | kubectl apply -f -
 
 ####################
 
-helm-deploy-mongo: k8s-delete-mongo ## Deploy MongoDB with Helm (https://github.com/bitnami/charts/tree/main/bitnami/mongodb/#installing-the-chart)
+helm-deploy-ns:
+	@kubectl create ns todo-helm --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl config set-context --current --namespace=todo-helm
+
+helm-deploy-mongo: helm-deploy-ns ## Deploy MongoDB with Helm
 	@helm repo add bitnami https://charts.bitnami.com/bitnami
 	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset
 
@@ -89,9 +97,44 @@ istio-build-frontend-red: ## Build the red frontend app
 istio-push-frontend-red: ## Push the frontend app
 	@docker push fsteccanella/todo-app-frontend:red
 
+istio-setup: ## Install Istio with istioctl
+	@curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.16.1 TARGET_ARCH=x86_64 sh -
+	@./istio-1.16.1/bin/istioctl install -y
+	@kubectl apply -f ./istio-1.16.1/samples/addons/prometheus.yaml
+	@kubectl apply -f ./istio-1.16.1/samples/addons/kiali.yaml
+	@rm -rf ./istio-1.16.1
+
+istio-deploy-ns:
+	@kubectl create ns todo-istio --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl config set-context --current --namespace=todo-istio
+	@$(MAKE) istio-label-ns
+
+istio-label-ns: ## Label todo namespace for istio sidecar injection
+	@kubectl label namespace todo-istio istio-injection=enabled
+
+istio-deploy-mongo: ## Deploy MongoDB manually
+	@kubectl apply -f ./_db/_k8s
+
+istio-deploy-backend: ## Deploy backend app
+	@kubectl apply -f ./backend/_k8s
+
+istio-deploy-frontend: ## Deploy frontend app
+	@kubectl apply -f ./frontend/_k8s
+
+istio-deploy-frontend-red: ## Deploy the frontend app
+	@kubectl apply -f ./frontend/_k8s/red
+
+istio-deploy-todo: ## Deploy istio components to show canary deploy	
+	@kubectl config set-context --current --namespace=todo-istio
+	@$(MAKE) istio-deploy-mongo
+	@$(MAKE) istio-deploy-backend
+	@$(MAKE) istio-deploy-frontend
+	@$(MAKE) istio-deploy-frontend-red
+	@kubectl apply -f ./_istio
+
 ####################
 
-load-test:
+load-test: ## Perform load test
 	@ab -n 1000000  "http://todo-app.example.local/api/todos"	
 
 ####################
