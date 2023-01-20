@@ -9,7 +9,7 @@ RUN npm install --production
 COPY . .
 RUN npm run build
 
-FROM nginx:1.22-alpine
+FROM nginxinc/nginx-unprivileged:1.22-alpine
 ENV TODO_API_BASE_URL=
 
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
