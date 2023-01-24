@@ -149,13 +149,13 @@ istio-deploy-todo: _istio-deploy-ns ## Deploy istio components to show canary de
 
 ####################
 
-k8s-load-test: ## Perform load test
-	@ab -n 1000000  "http://todo-app.example.local/"	
+k8s-load-test-backend: ## Perform load test
+	@ab -n 1000000  "http://todo-app.example.local/api/todos"	
 
-helm-load-test: ## Perform load test
-	@ab -n 1000000  "http://todo-app-helm.example.local/"	
+helm-load-test-backend: ## Perform load test
+	@ab -n 1000000  "http://todo-app-helm.example.local/api/todos"	
 
-istio-load-test: ## Perform load test
+istio-load-test-frontend: ## Perform load test
 	@ab -n 1000000  "http://todo-app-istio.example.local/"	
 
 ####################
