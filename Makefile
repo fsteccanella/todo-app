@@ -67,13 +67,13 @@ _k8s-deploy-backend: ## Deploy backend app
 _k8s-deploy-frontend: ## Deploy frontend app
 	@kubectl apply -f ./frontend/_k8s
 
-k8s-deploy-todo: _k8s-deploy-ns## Deploy todo app
+k8s-deploy-todo: _k8s-deploy-ns ## Deploy the todo app
 	@kubectl config set-context --current --namespace=todo
 	@$(MAKE) _k8s-deploy-mongo
 	@$(MAKE) _k8s-deploy-backend
 	@$(MAKE) _k8s-deploy-frontend
 	@kubectl create ingress todo-app-backend --rule=todo-app.example.local/api/todos*=todo-app-backend:3000 --dry-run=client -o yaml | kubectl apply -f -
-	@kubectl create ingress todo-app-frontend --rule=todo-app.example.local/*=todo-app-frontend:80 --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl create ingress todo-app-frontend --rule=todo-app.example.local/*=todo-app-frontend:8080 --dry-run=client -o yaml | kubectl apply -f -
 
 ####################
 
@@ -81,9 +81,25 @@ _helm-deploy-ns: ## Deploy todo-helm namespace
 	@kubectl create ns todo-helm --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl config set-context --current --namespace=todo-helm
 
-helm-deploy-mongo: _helm-deploy-ns ## Deploy MongoDB with Helm
+_helm-deploy-mongo: _helm-deploy-ns ## Deploy MongoDB with Helm
 	@helm repo add bitnami https://charts.bitnami.com/bitnami
-	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset
+	@helm upgrade --install todo-app-db bitnami/mongodb --set auth.enabled=false --set architecture=replicaset --set service.nameOverride=mongodb
+
+_helm-deploy-backend: ## Deploy backend app
+	@kubectl apply -f ./backend/_k8s
+
+_helm-deploy-frontend: ## Deploy frontend app
+	@kubectl apply -f ./frontend/_k8s
+
+helm-deploy-todo: _helm-deploy-ns ## Deploy the todo app
+	@kubectl config set-context --current --namespace=todo-helm
+	@$(MAKE) _helm-deploy-mongo
+	@$(MAKE) _helm-deploy-backend
+	@$(MAKE) _helm-deploy-frontend
+	@kubectl create ingress todo-app-backend --rule=todo-app-helm.example.local/api/todos*=todo-app-backend:3000 --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl create ingress todo-app-frontend --rule=todo-app-helm.example.local/*=todo-app-frontend:8080 --dry-run=client -o yaml | kubectl apply -f -
+
+
 
 ####################
 
@@ -133,7 +149,13 @@ istio-deploy-todo: _istio-deploy-ns ## Deploy istio components to show canary de
 
 ####################
 
-load-test: ## Perform load test
+k8s-load-test: ## Perform load test
+	@ab -n 1000000  "http://todo-app.example.local/"	
+
+helm-load-test: ## Perform load test
+	@ab -n 1000000  "http://todo-app-helm.example.local/"	
+
+istio-load-test: ## Perform load test
 	@ab -n 1000000  "http://todo-app-istio.example.local/"	
 
 ####################
