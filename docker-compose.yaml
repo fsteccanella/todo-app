@@ -9,7 +9,7 @@ services:
     environment:
       - TODO_API_SERVER=backend:3000
     ports:
-      - "8080:80"
+      - "8080:8080"
   backend:
     build: ./backend
     image: fsteccanella/todo-app-backend
