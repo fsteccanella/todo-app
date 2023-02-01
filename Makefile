@@ -34,7 +34,7 @@ docker-run-backend: guard-MONGO_SERVER ## Start backend app
 	@docker run -it --rm -e API_PORT=3000 -e MONGO_SERVER=$(MONGO_SERVER) -p 3000:3000 --name todo-backend fsteccanella/todo-app-backend
 
 docker-run-frontend: guard-TODO_API_SERVER ## Start frontend app
-	@docker run -it --rm -e TODO_API_SERVER=$(TODO_API_SERVER) -p 8080:80 fsteccanella/todo-app-frontend
+	@docker run -it --rm -e TODO_API_SERVER=$(TODO_API_SERVER) -p 8080:8080 fsteccanella/todo-app-frontend
 
 ####################
 
