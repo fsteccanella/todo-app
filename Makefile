@@ -74,6 +74,8 @@ k8s-deploy-todo: _k8s-deploy-ns ## Deploy the todo app
 	@$(MAKE) _k8s-deploy-frontend
 	@kubectl create ingress todo-app-backend --rule=todo-app.example.local/api/todos*=todo-app-backend:3000 --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl create ingress todo-app-frontend --rule=todo-app.example.local/*=todo-app-frontend:8080 --dry-run=client -o yaml | kubectl apply -f -
+	@echo 
+	@echo "To-Do App accessible at todo-app.example.local"
 
 ####################
 
@@ -98,7 +100,8 @@ helm-deploy-todo: _helm-deploy-ns ## Deploy the todo app
 	@$(MAKE) _helm-deploy-frontend
 	@kubectl create ingress todo-app-backend --rule=todo-app-helm.example.local/api/todos*=todo-app-backend:3000 --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl create ingress todo-app-frontend --rule=todo-app-helm.example.local/*=todo-app-frontend:8080 --dry-run=client -o yaml | kubectl apply -f -
-
+	@echo 
+	@echo "To-Do App accessible at todo-app-helm.example.local"
 
 
 ####################
@@ -146,6 +149,8 @@ istio-deploy-todo: _istio-deploy-ns ## Deploy istio components to show canary de
 	@$(MAKE) _istio-deploy-frontend
 	@$(MAKE) _istio-deploy-frontend-red
 	@kubectl apply -f ./_istio
+	@echo 
+	@echo "To-Do App accessible at todo-app-istio.example.local"
 
 ####################
 
